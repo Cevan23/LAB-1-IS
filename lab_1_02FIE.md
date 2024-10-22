@@ -37,24 +37,55 @@ The purpose of the shell file is to modify the /etc/hosts file to map the IP add
 
 After running the shell file with sudo, the /etc/hosts file has mapped the IP address 127.1.1.1 to the domain name google.com.
 
-## 4. Decrypt the file:
+To allow the shell to run with root privileges, we use the following command to set the setuid permission for the shell file.
 
+![alt text](./img/lab1/7.png)
 
-## 5. **For CBC mode**:
+## 4. Attack Scenario:
 
+In our C program, the stack frame of the main function is structured as shown in the diagram. Our attack scenario involves utilizing a return-to-libc attack, where we exploit the stack to redirect execution flow to the system function, which will execute the shell file specified in the environment variable SHELLVUL.
 
+![alt text](./img/lab1/8.png)
+<br>
 
-# Task 2. Encryption Mode – ECB vs. CBC
-This lab compares the behaviour of ECB and CBC encryption modes
-**Question 1**: Exploration of various ECB & CBC  with openssl
+Use the following two commands to disable address space layout randomization (ASLR) and set the environment variable for our shell program:
+
+sudo sysctl -w kernel.randomize_va_space=0: This command disables ASLR, which makes it easier to predict the memory addresses of functions in the program, allowing for more reliable exploitation techniques.
+
+export SHELLVUL='/home/seed/seclabs/Lab1/shell': This command sets the environment variable SHELLVUL to the path of our shell program. This variable will be used by the system function during exploitation to execute the specified shell.
+
+![alt text](./img/lab1/9.png)
+<br>
+
+## 5. Find payload:
+
+Run the program in GDB using the commands p system and p exit to find the addresses of the two functions in the libc library. Then, use the command find SHELLVUL to locate the address of the environment variable. After that, add 9 bytes to get the address of the shell file path string within the environment variable.
+Next, use the command x/s 0xffffd940 to examine the string at that address. After running the command, you should see the result displayed as shown in the accompanying image.
+![alt text](./img/lab1/10.png)
+<br>
+
+Finally, we can easily create a payload buffer using the analyzed stack frame with the following:
+![alt text](./img/lab1/11.png)
+<br>
+
+## 5. Excute the result:
+Finally, after running the compiled C program with the payload, we successfully executed the shell file, thereby completing the lab.
+
+![alt text](./img/lab1/12.png)
+<br>
+
+**Conclusion**: comment text about the screenshot or simply answered text for the question
+
+# Task 2: Attack on the database of Vulnerable App from SQLi lab 
+- Start docker container from SQLi. 
+- Install sqlmap.
+- Write instructions and screenshots in the answer sections. Strictly follow the below structure for your writeup. 
+
+**Question 1**: Use sqlmap to get information about all available databases
 **Answer 1**:
-## 1. Download the bitmap file `origin.bmp`.
 
+**Question 2**: Use sqlmap to get tables, users information
+**Answer 2**:
 
-## 2. Split the file into header and body:
-
-
-## 3. Encrypt the body using CBC mode:
-
-
-## 4. Combine the header and encrypted body:
+**Question 3**: Make use of John the Ripper to disclose the password of all database users from the above exploit
+**Answer 3**:
